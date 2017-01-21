@@ -1,3 +1,5 @@
+#### This is the CSCS algorithm by Khare, Oh, Rahman and Rajaratnam. The code was written by Syed Rahman. Please look at accompanying file for an example of how to use
+
 from __future__ import division
 import math
 import numpy
