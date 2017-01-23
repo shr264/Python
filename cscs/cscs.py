@@ -4,30 +4,34 @@ from __future__ import division
 import math
 import numpy
 from scipy import random, linalg
+import copy
 
 def softthresh(x,lmbda):
     out = numpy.sign(x)*(math.fabs(x)-lmbda)
     return out
 
 def Tj(lmbda,A,x,j,k):
-    out = softthresh(sum(A[numpy.arange(0,k+1)!=j,j]*x[numpy.arange(0,k+1)!=j]),lmbda)/(2*A[j,j])
+    out = softthresh(-2*sum(A[numpy.arange(0,k)!=(j-1),(j-1)]*x[numpy.arange(0,k)!=(j-1)]),lmbda)/(2*A[j-1,j-1])
     return out
 
 def Tk(A,x,k):
-    temp = sum(A[numpy.arange(0,k+1)!=k,k]*x[numpy.arange(0,k+1)!=k])
-    out = (-temp + math.sqrt(math.pow(temp,2)+4*A[k,k]))/(2*A[k,k])
+    temp = sum(A[numpy.arange(0,k)!=(k-1),(k-1)]*x[numpy.arange(0,k)!=(k-1)])
+    out = (-temp + math.sqrt(math.pow(temp,2)+4*A[k-1,k-1]))/(2*A[k-1,k-1])
     return out
 
 def h(k,A,lmbda,x0,maxitr,eps):
     itr = 1
     diff = 1
+    x1 = numpy.zeros(numpy.size(x0))
     while((diff>eps) and (itr<maxitr)):
-        x1 = x0
-        for j in range(0,k):
-            x1[j] = Tj(lmbda,A,x1,j,k)
-        x1[k] = Tk(A,x1,k)
+        for j in range(1,k):
+            x1[j-1] = Tj(lmbda,A,x1,j,k)
+        x1[k-1] = Tk(A,x1,k)
         diff = max(numpy.absolute(x1-x0))
         itr += 1
+        x0 = copy.copy(x1)
+        print 'diff = ', diff, '\n'
+        print 'itr = ', itr, '\n'
     return x1
 
 def cscs(Y,lmbda,initOm,maxitr,eps):
@@ -37,7 +41,7 @@ def cscs(Y,lmbda,initOm,maxitr,eps):
     L = numpy.identity(p)
     L[0,0] = 1/math.sqrt(S[0,0])
     for i in range(1,p):
-        L[i,numpy.arange(0,i+1)] = h(i,S[0:(i+1),0:(i+1)],lmbda,initOm[i,numpy.arange(0,i+1)],maxitr,eps)
+        L[i,numpy.arange(0,i+1)] = h(i+1,S[0:(i+1),0:(i+1)],lmbda,initOm[i,numpy.arange(0,i+1)],maxitr,eps)
     return L
 
 
